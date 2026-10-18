@@ -74,8 +74,12 @@ jobs:
             [[ "$path" != /* && "$path" != *".."* && "$path" != .git* ]] || { echo "Unsafe path: $path"; exit 1; }
             [[ -e "$path" ]] || { echo "Path does not exist in selected UAT ref: $path"; exit 1; }
             case "$path" in
-              .github/workflows/*)
-                echo "Workflow files cannot be promoted through this path-scoped release action. Review deployment workflows separately."
+              .github|.github/*)
+                echo "GitHub Actions/workflow files cannot be promoted through this path-scoped release action. Review deployment workflows separately."
+                exit 1
+                ;;
+              .firebaserc)
+                echo "The Firebase project binding is environment-specific and cannot be copied from UAT to production."
                 exit 1
                 ;;
             esac
@@ -116,7 +120,10 @@ jobs:
             git checkout "$FETCHED_SHA" -- "$path"
           done <<< "$PATHS_INPUT"
           git diff --cached --quiet && git diff --quiet && { echo "Selected paths produce no changes against production master."; exit 1; } || true
-          git add -A -- $(printf '%s\n' "$PATHS_INPUT" | sed '/^[[:space:]]*$/d')
+          while IFS= read -r path; do
+            [[ -n "$path" ]] || continue
+            git add -A -- "$path"
+          done <<< "$PATHS_INPUT"
           if git diff --cached --quiet; then
             echo "No staged changes found; refusing to open an empty promotion PR."
             exit 1
