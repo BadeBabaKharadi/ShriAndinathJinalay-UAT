@@ -217,6 +217,17 @@ test("food save, duplicate-mobile update, and lookup persist one record", async 
   );
 });
 
+test("allows lodging check-in from 23 October 2026", () => {
+  const { validateStay } = require("../event-registration.cjs");
+  const input = validStayInput({
+    checkInDate: "2026-10-23",
+    checkInTime: "12:00",
+    checkOutDate: "2026-10-24",
+    checkOutTime: "10:00",
+  });
+  assert.equal(validateStay(input).checkInDate, "2026-10-23");
+});
+
 test("lodging identity documents are validated and normalized", () => {
   const valid = validStayInput({
     identityDocumentType: "aadhaar",
