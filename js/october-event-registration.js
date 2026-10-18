@@ -118,6 +118,9 @@
       preview.classList.add("event-hidden");
       actions.classList.add("event-hidden");
     }
+    // A previously uploaded file satisfies the required-document rule when editing.
+    $("aadhaar").required =
+      kind === "stay" && !selectedAadhaar && !(existingAadhaar && !removeAadhaar);
   }
   function setKind(next) {
     kind = next;
