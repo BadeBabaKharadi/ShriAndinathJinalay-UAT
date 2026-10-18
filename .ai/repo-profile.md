@@ -1,57 +1,33 @@
-# AI Repository Profile — Shri Andinath Jinalay
+# AI Repository Profile — Shri Andinath Jinalay UAT
 
-This file is the repository-local operating profile for AI agents. It complements `.github/copilot-instructions.md`, `SPEC.md` and `CONTRIBUTING.md`.
+This is the UAT counterpart of `BadeBabaKharadi/ShriAndinathJinalay`.
 
 ## Identity
-- Repository: BadeBabaKharadi/ShriAndinathJinalay
+- Repository: BadeBabaKharadi/ShriAndinathJinalay-UAT
 - Default branch: `master`
-- Product: Bade Baba Kharadi / Shri Andinath Jinalay temple website and evolving reusable temple platform
-- Hosting model: static website / GitHub Pages
-- Current domain: badebabakharadi.com
+- Purpose: UAT/validation environment for the temple website/platform
 
 ## Source of truth
-1. `.github/copilot-instructions.md` — engineering rules.
-2. `SPEC.md` — platform specification and compatibility contract.
-3. `CONTRIBUTING.md` — local validation and contribution workflow.
-4. `README.md` — repository baseline.
-5. Existing code, data, assets and tests — implementation truth.
-6. GitHub issues/PRs/CI — current execution state.
+1. `.github/copilot-instructions.md` in the production repository where applicable.
+2. `SPEC.md` and `CONTRIBUTING.md` in this repository.
+3. Production repository `BadeBabaKharadi/ShriAndinathJinalay` for the intended production contract.
+4. UAT code/configuration and CI for environment-specific behaviour.
 
 ## Developer operating contract
-1. Inspect Copilot instructions, SPEC, relevant pages/components/data and tests before editing.
-2. Preserve existing public routes, content, registration contracts and asset paths unless the requirement explicitly changes them.
-3. Implement the smallest coherent change using existing static-site patterns.
-4. Add/update unit, integration, link and browser/UI coverage as applicable.
-5. Test desktop/mobile behaviour for user-facing changes.
-6. Validate JSON/data and local assets.
-7. Run `npm run check` (or the affected checks while iterating) before push.
-8. Monitor CI, inspect actual failures, fix root causes and continue until required checks are green.
-9. Review all affected pages for regressions.
-10. Update SPEC/README/CONTRIBUTING or other docs when documented behaviour changes.
-11. Merge only after required CI checks pass and repository rules permit it.
+1. Treat UAT as a validation environment, not an independent product definition.
+2. Inspect the production repository contract/spec before making product-level changes.
+3. Keep UAT behaviour intentionally aligned with production unless the change is explicitly UAT-only.
+4. Add/update tests for changed behaviour.
+5. Run `npm run check` and relevant browser/link/unit/integration checks.
+6. Monitor CI and fix actual failures until required checks are green.
+7. Never use UAT-only changes to silently redefine production requirements.
+8. Document intentional UAT differences.
 
 ## Product Owner operating contract
-1. Read SPEC and existing roadmap/requirements before proposing new platform behaviour.
-2. Treat backward compatibility as a first-class constraint.
-3. Separate event-specific requirements from reusable temple-platform capabilities.
-4. Create/update epics, stories and acceptance criteria rather than embedding product policy only in code.
-5. Keep the specification and implementation aligned.
-6. For production cutovers, require explicit acceptance testing and a reversible deployment path.
-7. Identify impacts on public routes, registrations, data contracts, accessibility, mobile responsiveness and future tenant reuse.
-
-## Non-negotiable compatibility rules
-- Existing public routes must continue to work unless an approved migration explicitly changes them.
-- Existing registration endpoint/event identifiers/payload contracts must not change silently.
-- New temple-home experiences remain preview-first until explicitly approved.
-- Do not delete production data/assets before replacement paths have regression coverage.
-- Production cutovers must be reversible.
+Product decisions belong to the production product/specification. Use this repository to validate those decisions, capture UAT findings and identify release blockers.
 
 ## Quality gate
-A change is complete only when the intended flow works, regression coverage exists, relevant checks are clean, CI is green, compatibility is preserved, and documentation impact is addressed.
+UAT is complete only when acceptance criteria pass, regression checks pass, CI is green, and all release-blocking findings are resolved or explicitly accepted.
 
-## Firebase Firestore database
-- Firebase project: `jain-community-platform`
-- Production Firestore database: `jcp-firestore-db-001`
-- Firestore location: `asia-south1`
-- Do not use or recreate the deleted `(default)` Firestore database.
-- Firebase Admin SDK code must explicitly target `jcp-firestore-db-001`.
+## Environment rule
+Do not assume a UAT-only route, endpoint, asset or configuration exists in production. Clearly label environment-specific behaviour in issues/PRs.
