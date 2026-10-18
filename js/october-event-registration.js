@@ -2,7 +2,7 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const BASE = "https://asia-south1-jain-community-platform.cloudfunctions.net";
-  let kind = "food", selectedAadhaar = null, existingAadhaar = false, removeAadhaar = false, previewUrl = null;
+  let kind = "food", selectedAadhaar = null, existingAadhaar = false, legacyStayWithoutIdentity = false, removeAadhaar = false, previewUrl = null;
 
 
   function renderSubmittedSummary(data) {
@@ -132,7 +132,7 @@
     $("lookupSection").classList.remove("event-hidden");
     $("message").textContent = "";
     $("mobile").value = "";
-    selectedAadhaar = null; existingAadhaar = false; removeAadhaar = false; $("aadhaar").value = "";
+    selectedAadhaar = null; existingAadhaar = false; legacyStayWithoutIdentity = false; removeAadhaar = false; $("aadhaar").value = "";
     renderAadhaarPreview();
     $("submit").classList.add("event-hidden");
     $("registrationCard").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -142,7 +142,7 @@
     try {
       const result = await call("octoberEventLookup", { kind, mobile: $("mobile").value });
       if (!result.exists) {
-        selectedAadhaar = null; existingAadhaar = false; removeAadhaar = false; $("aadhaar").value = ""; renderAadhaarPreview();
+        selectedAadhaar = null; existingAadhaar = false; legacyStayWithoutIdentity = false; removeAadhaar = false; $("aadhaar").value = ""; renderAadhaarPreview();
         $("formFields").classList.remove("event-hidden");
         $("submit").classList.remove("event-hidden");
         message("इस मोबाइल नंबर से पंजीकरण नहीं मिला। नई जानकारी भरकर सुरक्षित करें।");
@@ -151,7 +151,7 @@
       const r = result.registration;
       ["name", "address", "city", "state", "pincode", "comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children", "coupons"].forEach(key => { if ($(key) && r[key] !== undefined) $(key).value = r[key]; });
       selectedAadhaar = null; $("aadhaar").value = "";
-      existingAadhaar = kind === "stay" && Boolean(r.aadhaarUploaded); removeAadhaar = false;
+      existingAadhaar = kind === "stay" && Boolean(r.aadhaarUploaded); legacyStayWithoutIdentity = kind === "stay" && !r.identityDocumentNumber; removeAadhaar = false;
       renderAadhaarPreview();
       renderSubmittedSummary(r);
       renderRegistrationQr(r.registrationId);
@@ -181,7 +181,7 @@
           if (!patterns[documentType].test(normalizedNumber)) throw new Error(documentType === "aadhaar" ? "आधार नंबर 12 अंकों का होना चाहिए और 0 या 1 से शुरू नहीं होना चाहिए।" : documentType === "pan" ? "पैन नंबर का प्रारूप ABCDE1234F जैसा होना चाहिए।" : documentType === "voter_id" ? "वोटर आईडी का प्रारूप ABC1234567 जैसा होना चाहिए।" : "कृपया सही ड्राइविंग लाइसेंस नंबर दर्ज करें।");
           data.identityDocumentType = documentType;
           data.identityDocumentNumber = normalizedNumber;
-        } else if (!existingAadhaar && !window.currentRegistrationIsLegacy) {
+        } else if (!legacyStayWithoutIdentity) {
           throw new Error("कृपया पहचान दस्तावेज़ संख्या दर्ज करें।");
         }
         Object.assign(data, { pincode: $("pincode").value.trim(), comingFrom: $("comingFrom").value, checkInDate: $("checkInDate").value, checkInTime: $("checkInTime").value, checkOutDate: $("checkOutDate").value, checkOutTime: $("checkOutTime").value, male: Number($("male").value), female: Number($("female").value), children: Number($("children").value) });
