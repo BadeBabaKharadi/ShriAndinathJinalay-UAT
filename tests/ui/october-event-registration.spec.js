@@ -348,6 +348,21 @@ test("authorized food admin can view details and export the filtered list", asyn
   expect(download.suggestedFilename()).toBe("october-food-registrations.csv");
 });
 
+test("supports lodging check-in starting on 23 October", async ({ page }) => {
+  await mockQrLibrary(page);
+  await handleCallablePreflight(page);
+  await page.goto("/october-event-registration.html");
+  await page
+    .getByRole("button", { name: "बाहर से आने वाले यात्रियों हेतु आवास" })
+    .click();
+  await page.getByLabel("मोबाइल नंबर *").fill("9876543210");
+  await mockCallable(page, "octoberEventLookup", { exists: false });
+  await page.getByRole("button", { name: "खोजें और आगे बढ़ें" }).click();
+  await expect(page.locator("#formFields")).toBeVisible();
+  await expect(page.locator("#checkInDate")).toContainText("23 अक्टूबर");
+  await expect(page.locator("#checkInDate option").first()).toHaveValue("2026-10-23");
+});
+
 test("new lodging registration includes a selected Aadhaar document", async ({
   page,
 }) => {
