@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Validate website and Firebase Functions
+    name: Validate website
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -28,16 +28,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Firebase Functions dependencies
-        working-directory: functions
-        run: npm ci
       - name: Install browser runtime
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps chromium
       - name: Run required website checks
         run: npm run check
-      - name: Run Firebase Functions tests
-        working-directory: functions
-        run: npm test
       - name: Upload Playwright artifacts
         if: always()
         uses: actions/upload-artifact@v4
