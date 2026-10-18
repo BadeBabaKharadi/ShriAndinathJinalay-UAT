@@ -223,6 +223,7 @@ test("existing lodging registration can be edited without re-uploading Aadhaar",
   await page.getByRole("button", { name: "जानकारी संशोधित करें" }).click();
   await expect(page.locator("#formFields")).toBeVisible();
   await expect(page.locator("#name")).toHaveValue("Existing Traveller");
+  await expect(page.locator("#checkInTime")).toHaveValue("12:30");
   await page.locator("#name").fill("Updated Traveller");
   await page.locator("#pincode").fill("411014");
   await page.locator("#identityDocumentNumber").fill("234567890123");
