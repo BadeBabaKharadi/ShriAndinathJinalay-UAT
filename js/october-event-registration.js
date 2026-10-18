@@ -2,15 +2,15 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const BASE = "https://asia-south1-jain-community-platform.cloudfunctions.net";
-  let kind = "food", selectedAadhaar = null, existingAadhaar = false, removeAadhaar = false, previewUrl = null;
+  let kind = "food", selectedAadhaar = null, existingAadhaar = false, legacyStayWithoutIdentity = false, removeAadhaar = false, previewUrl = null;
 
 
   function renderSubmittedSummary(data) {
     const summary = $("submittedSummary");
     summary.replaceChildren();
     const fields = kind === "food"
-      ? [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["भोजन कूपन", data.coupons ?? $("coupons").value]]
-      : [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["आने का स्थान", data.comingFrom ?? $("comingFrom").value], ["आगमन", (data.checkInDate ?? $("checkInDate").value) + " " + (data.checkInTime ?? $("checkInTime").value)], ["प्रस्थान", (data.checkOutDate ?? $("checkOutDate").value) + " " + (data.checkOutTime ?? $("checkOutTime").value)], ["पुरुष", data.male ?? $("male").value], ["महिलाएँ", data.female ?? $("female").value], ["बच्चे", data.children ?? $("children").value]];
+      ? [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["शहर", data.city ?? $("city").value], ["राज्य", data.state ?? $("state").value], ["भोजन कूपन", data.coupons ?? $("coupons").value]]
+      : [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["शहर", data.city ?? $("city").value], ["राज्य", data.state ?? $("state").value], ["पिन कोड", data.pincode ?? $("pincode").value], ["आने का स्थान", data.comingFrom ?? $("comingFrom").value], ["आगमन", (data.checkInDate ?? $("checkInDate").value) + " " + (data.checkInTime ?? $("checkInTime").value)], ["प्रस्थान", (data.checkOutDate ?? $("checkOutDate").value) + " " + (data.checkOutTime ?? $("checkOutTime").value)], ["पुरुष", data.male ?? $("male").value], ["महिलाएँ", data.female ?? $("female").value], ["बच्चे", data.children ?? $("children").value]];
     fields.forEach(([label, value]) => {
       const row = document.createElement("p");
       const strong = document.createElement("strong");
@@ -86,7 +86,7 @@
     if (selectedAadhaar) {
       const name = document.createElement("div");
       name.className = "event-aadhaar-file";
-      name.textContent = "चुनी गई फ़ाइल: " + selectedAadhaar.name;
+      name.textContent = "चुनी गई पहचान दस्तावेज़ फ़ाइल: " + selectedAadhaar.name;
       preview.appendChild(name);
       const size = document.createElement("small");
       size.textContent = (selectedAadhaar.size / (1024 * 1024)).toFixed(2) + " MB";
@@ -118,12 +118,15 @@
       preview.classList.add("event-hidden");
       actions.classList.add("event-hidden");
     }
+    // A previously uploaded file satisfies the required-document rule when editing.
+    $("aadhaar").required =
+      kind === "stay" && !selectedAadhaar && !(existingAadhaar && !removeAadhaar);
   }
   function setKind(next) {
     kind = next;
     $("kind").value = next;
-    ["comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children"].forEach(id => { const field = $(id); if (field) field.required = next === "stay"; });
-    $("registrationCard").classList.remove("event-hidden");
+    ["comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children", "identityDocumentType", "identityDocumentNumber", "aadhaar"].forEach(id => { const field = $(id); if (field) field.required = next === "stay"; });
+    $("cityField").classList.remove("event-hidden"); $("stateField").classList.remove("event-hidden"); $("city").required = true; $("state").required = true; $("pincode").required = next === "stay"; $("pinField").classList.toggle("event-hidden", next !== "stay"); $("registrationCard").classList.remove("event-hidden");
     $("lookupSection").classList.remove("event-hidden");
     $("formFields").classList.add("event-hidden");
     $("foodFields").classList.toggle("event-hidden", next !== "food");
@@ -132,7 +135,7 @@
     $("lookupSection").classList.remove("event-hidden");
     $("message").textContent = "";
     $("mobile").value = "";
-    selectedAadhaar = null; existingAadhaar = false; removeAadhaar = false; $("aadhaar").value = "";
+    selectedAadhaar = null; existingAadhaar = false; legacyStayWithoutIdentity = false; removeAadhaar = false; $("aadhaar").value = "";
     renderAadhaarPreview();
     $("submit").classList.add("event-hidden");
     $("registrationCard").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -142,16 +145,30 @@
     try {
       const result = await call("octoberEventLookup", { kind, mobile: $("mobile").value });
       if (!result.exists) {
-        selectedAadhaar = null; existingAadhaar = false; removeAadhaar = false; $("aadhaar").value = ""; renderAadhaarPreview();
+        selectedAadhaar = null; existingAadhaar = false; legacyStayWithoutIdentity = false; removeAadhaar = false; $("aadhaar").value = ""; renderAadhaarPreview();
         $("formFields").classList.remove("event-hidden");
         $("submit").classList.remove("event-hidden");
         message("इस मोबाइल नंबर से पंजीकरण नहीं मिला। नई जानकारी भरकर सुरक्षित करें।");
         return;
       }
       const r = result.registration;
-      ["name", "address", "comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children", "coupons"].forEach(key => { if ($(key) && r[key] !== undefined) $(key).value = r[key]; });
+      ["name", "address", "city", "state", "pincode", "comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children", "coupons"].forEach(key => { if ($(key) && r[key] !== undefined) $(key).value = r[key]; });
+      if (kind === "stay") {
+        ["checkInTime", "checkOutTime"].forEach(key => {
+          const field = $(key);
+          const time = String(r[key] ?? "");
+          if (!field || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return;
+          if (!Array.from(field.options).some(option => option.value === time)) {
+            const option = document.createElement("option");
+            option.value = time;
+            option.textContent = time + " (पहले से दर्ज)";
+            field.appendChild(option);
+          }
+          field.value = time;
+        });
+      }
       selectedAadhaar = null; $("aadhaar").value = "";
-      existingAadhaar = kind === "stay" && Boolean(r.aadhaarUploaded); removeAadhaar = false;
+      existingAadhaar = kind === "stay" && Boolean(r.aadhaarUploaded); legacyStayWithoutIdentity = kind === "stay" && !r.identityDocumentNumber; removeAadhaar = false;
       renderAadhaarPreview();
       renderSubmittedSummary(r);
       renderRegistrationQr(r.registrationId);
@@ -170,13 +187,24 @@
     if ($("submit").disabled) return;
     setSubmitting(true);
     try {
-      const data = { kind, mobile: $("mobile").value, name: $("name").value, address: $("address").value };
+      const data = { kind, mobile: $("mobile").value, name: $("name").value, address: $("address").value, city: $("city").value.trim(), state: $("state").value.trim() };
       if (kind === "food") data.coupons = Number($("coupons").value);
       else {
-        Object.assign(data, { comingFrom: $("comingFrom").value, checkInDate: $("checkInDate").value, checkInTime: $("checkInTime").value, checkOutDate: $("checkOutDate").value, checkOutTime: $("checkOutTime").value, male: Number($("male").value), female: Number($("female").value), children: Number($("children").value) });
+        const documentType = $("identityDocumentType").value;
+        const documentNumber = $("identityDocumentNumber").value.trim().toUpperCase();
+        const normalizedNumber = documentNumber.replace(/\s+/g, "");
+        const patterns = { aadhaar: /^[2-9][0-9]{11}$/, pan: /^[A-Z]{5}[0-9]{4}[A-Z]$/, driving_license: /^[A-Z0-9 -]{5,20}$/, voter_id: /^[A-Z]{3}[0-9]{7}$/ };
+        if (normalizedNumber) {
+          if (!patterns[documentType].test(normalizedNumber)) throw new Error(documentType === "aadhaar" ? "आधार नंबर 12 अंकों का होना चाहिए और 0 या 1 से शुरू नहीं होना चाहिए।" : documentType === "pan" ? "पैन नंबर का प्रारूप ABCDE1234F जैसा होना चाहिए।" : documentType === "voter_id" ? "वोटर आईडी का प्रारूप ABC1234567 जैसा होना चाहिए।" : "कृपया सही ड्राइविंग लाइसेंस नंबर दर्ज करें।");
+          data.identityDocumentType = documentType;
+          data.identityDocumentNumber = normalizedNumber;
+        } else if (!legacyStayWithoutIdentity) {
+          throw new Error("कृपया पहचान दस्तावेज़ संख्या दर्ज करें।");
+        }
+        Object.assign(data, { pincode: $("pincode").value.trim(), comingFrom: $("comingFrom").value, checkInDate: $("checkInDate").value, checkInTime: $("checkInTime").value, checkOutDate: $("checkOutDate").value, checkOutTime: $("checkOutTime").value, male: Number($("male").value), female: Number($("female").value), children: Number($("children").value) });
         if (selectedAadhaar) {
-          if (selectedAadhaar.size > 5 * 1024 * 1024) throw new Error("आधार फाइल 5 MB से छोटी होनी चाहिए।");
-          if (!["application/pdf", "image/jpeg", "image/png"].includes(selectedAadhaar.type)) throw new Error("आधार के लिए PDF, JPG या PNG फ़ाइल चुनें।");
+          if (selectedAadhaar.size > 5 * 1024 * 1024) throw new Error("दस्तावेज़ फ़ाइल 5 MB से छोटी होनी चाहिए।");
+          if (!["application/pdf", "image/jpeg", "image/png"].includes(selectedAadhaar.type)) throw new Error("दस्तावेज़ के लिए PDF, JPG या PNG फ़ाइल चुनें।");
           data.aadhaarFileName = selectedAadhaar.name;
           data.aadhaarMime = selectedAadhaar.type;
           data.aadhaarBase64 = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(",")[1]); reader.onerror = reject; reader.readAsDataURL(selectedAadhaar); });

@@ -112,6 +112,8 @@ test("food registration submits details and renders the stable QR reference", as
   await expect(page.locator("#formFields")).toBeVisible();
   await page.getByLabel("पूरा नाम *").fill("Test Person");
   await page.getByLabel("पूरा पता *").fill("Pune address");
+  await page.locator("#city").fill("Pune");
+  await page.locator("#state").fill("Maharashtra");
   await page.locator("#coupons").selectOption("3");
   await page.getByRole("button", { name: "पंजीकरण सुरक्षित करें" }).click();
 
@@ -221,9 +223,15 @@ test("existing lodging registration can be edited without re-uploading Aadhaar",
   await page.getByRole("button", { name: "जानकारी संशोधित करें" }).click();
   await expect(page.locator("#formFields")).toBeVisible();
   await expect(page.locator("#name")).toHaveValue("Existing Traveller");
+  await expect(page.locator("#checkInTime")).toHaveValue("12:30");
+  await expect(page.locator("#aadhaar")).not.toHaveAttribute("required", "");
   await page.locator("#name").fill("Updated Traveller");
+  await page.locator("#city").fill("Pune");
+  await page.locator("#state").fill("Maharashtra");
+  await page.locator("#pincode").fill("411014");
+  await page.locator("#identityDocumentNumber").fill("234567890123");
   await page.locator("#checkOutDate").selectOption("2026-10-26");
-  await page.locator("#checkOutTime").fill("10:00");
+  await page.locator("#checkOutTime").selectOption("10:00");
   await page.getByRole("button", { name: "पंजीकरण सुरक्षित करें" }).click();
 
   await expect(page.locator("#confirmCode")).toHaveText("DKS26-OLD123");
@@ -344,6 +352,23 @@ test("authorized food admin can view details and export the filtered list", asyn
   expect(download.suggestedFilename()).toBe("october-food-registrations.csv");
 });
 
+test("supports lodging check-in starting on 23 October", async ({ page }) => {
+  await mockQrLibrary(page);
+  await handleCallablePreflight(page);
+  await page.goto("/october-event-registration.html");
+  await page
+    .getByRole("button", { name: "बाहर से आने वाले यात्रियों हेतु आवास" })
+    .click();
+  await page.getByLabel("मोबाइल नंबर *").fill("9876543210");
+  await mockCallable(page, "octoberEventLookup", { exists: false });
+  await page.getByRole("button", { name: "खोजें और आगे बढ़ें" }).click();
+  await expect(page.locator("#formFields")).toBeVisible();
+  await expect(page.locator("#checkInDate")).toContainText("23 अक्टूबर");
+  await expect(page.locator("#checkInDate option").first()).toHaveValue(
+    "2026-10-23",
+  );
+});
+
 test("new lodging registration includes a selected Aadhaar document", async ({
   page,
 }) => {
@@ -381,10 +406,14 @@ test("new lodging registration includes a selected Aadhaar document", async ({
   await expect(page.locator("#formFields")).toBeVisible();
   await page.getByLabel("पूरा नाम *").fill("New Traveller");
   await page.getByLabel("पूरा पता *").fill("Pune address");
+  await page.locator("#city").fill("Pune");
+  await page.locator("#state").fill("Maharashtra");
+  await page.locator("#pincode").fill("411014");
+  await page.locator("#identityDocumentNumber").fill("234567890123");
   await page.getByLabel("कहाँ से आ रहे हैं? *").fill("Nashik");
   await page.locator("#checkOutDate").selectOption("2026-10-26");
-  await page.locator("#checkInTime").fill("12:30");
-  await page.locator("#checkOutTime").fill("10:00");
+  await page.locator("#checkInTime").selectOption("12:00");
+  await page.locator("#checkOutTime").selectOption("10:00");
   await page.locator("#male").fill("1");
   await page.locator("#female").fill("1");
   await page.locator("#children").fill("0");

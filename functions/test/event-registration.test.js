@@ -217,6 +217,70 @@ test("food save, duplicate-mobile update, and lookup persist one record", async 
   );
 });
 
+test("allows lodging check-in from 23 October 2026", () => {
+  const { validateStay } = require("../event-registration.cjs");
+  const input = validStayInput({
+    checkInDate: "2026-10-23",
+    checkInTime: "12:00",
+    checkOutDate: "2026-10-24",
+    checkOutTime: "10:00",
+  });
+  assert.equal(validateStay(input).checkInDate, "2026-10-23");
+});
+
+test("lodging identity documents are validated and normalized", () => {
+  const valid = validStayInput({
+    identityDocumentType: "aadhaar",
+    identityDocumentNumber: "234567890123",
+    city: "Pune",
+    state: "Maharashtra",
+    pincode: "411014",
+  });
+  const { validateStay } = require("../event-registration.cjs");
+  const normalized = validateStay(valid);
+  assert.equal(normalized.identityDocumentType, "aadhaar");
+  assert.equal(normalized.identityDocumentNumber, "234567890123");
+  assert.equal(normalized.city, "Pune");
+  assert.equal(normalized.state, "Maharashtra");
+  assert.equal(normalized.pincode, "411014");
+
+  assert.equal(
+    validateStay({
+      ...valid,
+      identityDocumentType: "pan",
+      identityDocumentNumber: "abcde1234f",
+    }).identityDocumentNumber,
+    "ABCDE1234F",
+  );
+  assert.throws(() => validateStay({ ...valid, pincode: "41101" }), /PIN code/);
+  assert.throws(
+    () => validateStay({ ...valid, identityDocumentNumber: "012345678901" }),
+    /Aadhaar number/,
+  );
+  assert.throws(
+    () =>
+      validateStay({
+        ...valid,
+        identityDocumentType: "pan",
+        identityDocumentNumber: "INVALID",
+      }),
+    /PAN number/,
+  );
+  assert.throws(
+    () =>
+      validateStay({
+        ...valid,
+        identityDocumentType: "voter_id",
+        identityDocumentNumber: "ABC123",
+      }),
+    /Voter ID/,
+  );
+  assert.throws(
+    () => validateStay({ ...valid, identityDocumentType: "other" }),
+    /identity document type/,
+  );
+});
+
 test("lodging edits preserve existing Aadhaar without another upload", async () => {
   const {
     saveRegistration,
