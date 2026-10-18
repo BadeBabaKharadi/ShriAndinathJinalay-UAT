@@ -122,7 +122,7 @@
   function setKind(next) {
     kind = next;
     $("kind").value = next;
-    ["comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children"].forEach(id => { const field = $(id); if (field) field.required = next === "stay"; });
+    ["comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children", "identityDocumentType", "identityDocumentNumber", "aadhaar"].forEach(id => { const field = $(id); if (field) field.required = next === "stay"; });
     $("cityField").classList.remove("event-hidden"); $("stateField").classList.remove("event-hidden"); $("city").required = true; $("state").required = true; $("pincode").required = next === "stay"; $("pinField").classList.toggle("event-hidden", next !== "stay"); $("registrationCard").classList.remove("event-hidden");
     $("lookupSection").classList.remove("event-hidden");
     $("formFields").classList.add("event-hidden");
