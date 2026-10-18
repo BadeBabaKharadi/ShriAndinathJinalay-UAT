@@ -241,30 +241,25 @@ test("lodging identity documents are validated and normalized", () => {
     }).identityDocumentNumber,
     "ABCDE1234F",
   );
-  assert.throws(
-    () => validateStay({ ...valid, pincode: "41101" }),
-    /PIN code/,
-  );
+  assert.throws(() => validateStay({ ...valid, pincode: "41101" }), /PIN code/);
   assert.throws(
     () => validateStay({ ...valid, identityDocumentNumber: "012345678901" }),
     /Aadhaar number/,
   );
   assert.throws(
-    () =>
-      validateStay({
-        ...valid,
-        identityDocumentType: "pan",
-        identityDocumentNumber: "INVALID",
-      }),
+    () => validateStay({
+      ...valid,
+      identityDocumentType: "pan",
+      identityDocumentNumber: "INVALID",
+    }),
     /PAN number/,
   );
   assert.throws(
-    () =>
-      validateStay({
-        ...valid,
-        identityDocumentType: "voter_id",
-        identityDocumentNumber: "ABC123",
-      }),
+    () => validateStay({
+      ...valid,
+      identityDocumentType: "voter_id",
+      identityDocumentNumber: "ABC123",
+    }),
     /Voter ID/,
   );
   assert.throws(
