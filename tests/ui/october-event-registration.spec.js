@@ -117,6 +117,9 @@ test("food registration submits details and renders the stable QR reference", as
 
   await expect(page.locator("#confirmation")).toBeVisible();
   await expect(page.locator("#confirmCode")).toHaveText("DKF26-ABC123");
+  await expect(page.locator("#formFields")).toBeHidden();
+  await expect(page.locator("#lookupSection")).toBeHidden();
+  await expect(page.locator("#submittedSummary")).toContainText("Test Person");
   await expect(page.locator("#qr")).toHaveAttribute(
     "data-payload",
     JSON.stringify({
@@ -202,6 +205,21 @@ test("existing lodging registration can be edited without re-uploading Aadhaar",
     .click();
   await page.getByLabel("मोबाइल नंबर *").fill("9876543210");
   await page.getByRole("button", { name: "खोजें और आगे बढ़ें" }).click();
+  await expect(page.locator("#confirmation")).toBeVisible();
+  await expect(page.locator("#submittedSummary")).toContainText(
+    "Existing Traveller",
+  );
+  await expect(page.locator("#qr")).toHaveAttribute(
+    "data-payload",
+    JSON.stringify({
+      event: "october-2026",
+      kind: "stay",
+      registrationId: "DKS26-OLD123",
+    }),
+  );
+  await expect(page.locator("#formFields")).toBeHidden();
+  await page.getByRole("button", { name: "जानकारी संशोधित करें" }).click();
+  await expect(page.locator("#formFields")).toBeVisible();
   await expect(page.locator("#name")).toHaveValue("Existing Traveller");
   await page.locator("#name").fill("Updated Traveller");
   await page.locator("#checkOutDate").selectOption("2026-10-26");

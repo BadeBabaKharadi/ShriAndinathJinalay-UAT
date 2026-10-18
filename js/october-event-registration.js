@@ -4,6 +4,28 @@
   const BASE = "https://asia-south1-jain-community-platform.cloudfunctions.net";
   let kind = "food", selectedAadhaar = null, existingAadhaar = false, removeAadhaar = false, previewUrl = null;
 
+
+  function renderSubmittedSummary(data) {
+    const summary = $("submittedSummary");
+    summary.replaceChildren();
+    const fields = kind === "food"
+      ? [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["भोजन कूपन", data.coupons ?? $("coupons").value]]
+      : [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["आने का स्थान", data.comingFrom ?? $("comingFrom").value], ["आगमन", (data.checkInDate ?? $("checkInDate").value) + " " + (data.checkInTime ?? $("checkInTime").value)], ["प्रस्थान", (data.checkOutDate ?? $("checkOutDate").value) + " " + (data.checkOutTime ?? $("checkOutTime").value)], ["पुरुष", data.male ?? $("male").value], ["महिलाएँ", data.female ?? $("female").value], ["बच्चे", data.children ?? $("children").value]];
+    fields.forEach(([label, value]) => {
+      const row = document.createElement("p");
+      const strong = document.createElement("strong");
+      strong.textContent = label + ": ";
+      row.append(strong, document.createTextNode(String(value ?? "—")));
+      summary.appendChild(row);
+    });
+  }
+  function renderRegistrationQr(registrationId) {
+    $("confirmCode").textContent = registrationId;
+    if (!window.QRCode) throw new Error("QR कोड लोड नहीं हो पाया। पृष्ठ रीफ़्रेश करके पुनः प्रयास करें।");
+    $("qr").replaceChildren();
+    new QRCode($("qr"), { text: JSON.stringify({ event: "october-2026", kind, registrationId }), width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
+  }
+
   function setSubmitting(active) {
     const button = $("submit");
     button.disabled = active;
@@ -102,10 +124,12 @@
     $("kind").value = next;
     ["comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children"].forEach(id => { const field = $(id); if (field) field.required = next === "stay"; });
     $("registrationCard").classList.remove("event-hidden");
+    $("lookupSection").classList.remove("event-hidden");
     $("formFields").classList.add("event-hidden");
     $("foodFields").classList.toggle("event-hidden", next !== "food");
     $("stayFields").classList.toggle("event-hidden", next !== "stay");
     $("confirmation").classList.add("event-hidden");
+    $("lookupSection").classList.remove("event-hidden");
     $("message").textContent = "";
     $("mobile").value = "";
     selectedAadhaar = null; existingAadhaar = false; removeAadhaar = false; $("aadhaar").value = "";
@@ -129,9 +153,16 @@
       selectedAadhaar = null; $("aadhaar").value = "";
       existingAadhaar = kind === "stay" && Boolean(r.aadhaarUploaded); removeAadhaar = false;
       renderAadhaarPreview();
-      $("formFields").classList.remove("event-hidden");
-      $("submit").classList.remove("event-hidden");
-      message("पुरानी जानकारी लोड हो गई है। संशोधित करके दोबारा सुरक्षित कर सकते हैं।");
+      renderSubmittedSummary(r);
+      renderRegistrationQr(r.registrationId);
+      $("confirmationHeading").textContent = "आपका मौजूदा पंजीकरण";
+      $("confirmText").textContent = "नीचे आपकी पहले से जमा जानकारी और QR कोड दिया गया है। बदलाव करने के लिए संशोधन चुनें।";
+      $("editRegistration").classList.remove("event-hidden");
+      $("confirmation").classList.remove("event-hidden");
+      $("lookupSection").classList.add("event-hidden");
+      $("formFields").classList.add("event-hidden");
+      $("submit").classList.add("event-hidden");
+      window.scrollTo({ top: $("confirmation").offsetTop, behavior: "smooth" });
     } catch (e) { message(friendlyError(e), true); }
   });
   $("eventForm").addEventListener("submit", async event => {
@@ -153,21 +184,30 @@
       }
       const result = await call("octoberEventSave", data);
       const r = result.registration;
+      renderSubmittedSummary(data);
+      renderRegistrationQr(r.registrationId);
+      $("confirmationHeading").textContent = "पंजीकरण सुरक्षित हुआ";
+      $("confirmText").textContent = "आपकी जानकारी सुरक्षित है। नीचे जमा विवरण देखें और QR को आयोजन स्थल पर दिखाएँ।";
+      $("editRegistration").classList.add("event-hidden");
       $("confirmation").classList.remove("event-hidden");
-      $("confirmText").textContent = "आपकी जानकारी सुरक्षित है। QR को आयोजन स्थल पर दिखाएँ।";
-      $("confirmCode").textContent = r.registrationId;
-      if (window.QRCode) {
-        $("qr").replaceChildren();
-        new QRCode($("qr"), { text: JSON.stringify({ event: "october-2026", kind, registrationId: r.registrationId }), width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
-      } else throw new Error("QR कोड लोड नहीं हो पाया। पृष्ठ रीफ़्रेश करके पुनः प्रयास करें।");
+      $("lookupSection").classList.add("event-hidden");
+      $("formFields").classList.add("event-hidden");
+      $("submit").classList.add("event-hidden");
       message(result.exists ? "पंजीकरण अपडेट हो गया।" : "पंजीकरण सफल हुआ।");
-      $("submit").textContent = "✓ पंजीकरण सुरक्षित हुआ";
       window.scrollTo({ top: $("confirmation").offsetTop, behavior: "smooth" });
     } catch (e) {
       message(friendlyError(e) || "पंजीकरण सुरक्षित नहीं हो सका।", true);
     } finally {
       setSubmitting(false);
     }
+  });
+  $("editRegistration").addEventListener("click", () => {
+    $("confirmation").classList.add("event-hidden");
+    $("lookupSection").classList.remove("event-hidden");
+    $("formFields").classList.remove("event-hidden");
+    $("submit").classList.remove("event-hidden");
+    message("अब आप अपनी जानकारी संशोधित कर सकते हैं।");
+    $("registrationCard").scrollIntoView({ behavior: "smooth", block: "start" });
   });
   $("printQr").addEventListener("click", () => window.print());
   setupAadhaarControls();
