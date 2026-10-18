@@ -384,6 +384,9 @@ test("new lodging registration includes a selected Aadhaar document", async ({
   await expect(page.locator("#formFields")).toBeVisible();
   await page.getByLabel("पूरा नाम *").fill("New Traveller");
   await page.getByLabel("पूरा पता *").fill("Pune address");
+  await page.locator("#city").fill("Pune");
+  await page.locator("#state").fill("Maharashtra");
+  await page.locator("#pincode").fill("411014");
   await page.getByLabel("कहाँ से आ रहे हैं? *").fill("Nashik");
   await page.locator("#checkOutDate").selectOption("2026-10-26");
   await page.locator("#checkInTime").fill("12:30");
