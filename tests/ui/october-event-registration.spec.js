@@ -112,6 +112,8 @@ test("food registration submits details and renders the stable QR reference", as
   await expect(page.locator("#formFields")).toBeVisible();
   await page.getByLabel("पूरा नाम *").fill("Test Person");
   await page.getByLabel("पूरा पता *").fill("Pune address");
+  await page.locator("#city").fill("Pune");
+  await page.locator("#state").fill("Maharashtra");
   await page.locator("#coupons").selectOption("3");
   await page.getByRole("button", { name: "पंजीकरण सुरक्षित करें" }).click();
 
@@ -222,6 +224,7 @@ test("existing lodging registration can be edited without re-uploading Aadhaar",
   await expect(page.locator("#formFields")).toBeVisible();
   await expect(page.locator("#name")).toHaveValue("Existing Traveller");
   await page.locator("#name").fill("Updated Traveller");
+  await page.locator("#pincode").fill("411014");
   await page.locator("#checkOutDate").selectOption("2026-10-26");
   await page.locator("#checkOutTime").fill("10:00");
   await page.getByRole("button", { name: "पंजीकरण सुरक्षित करें" }).click();
