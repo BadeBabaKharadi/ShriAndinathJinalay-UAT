@@ -9,8 +9,8 @@
     const summary = $("submittedSummary");
     summary.replaceChildren();
     const fields = kind === "food"
-      ? [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["भोजन कूपन", data.coupons ?? $("coupons").value]]
-      : [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["आने का स्थान", data.comingFrom ?? $("comingFrom").value], ["आगमन", (data.checkInDate ?? $("checkInDate").value) + " " + (data.checkInTime ?? $("checkInTime").value)], ["प्रस्थान", (data.checkOutDate ?? $("checkOutDate").value) + " " + (data.checkOutTime ?? $("checkOutTime").value)], ["पुरुष", data.male ?? $("male").value], ["महिलाएँ", data.female ?? $("female").value], ["बच्चे", data.children ?? $("children").value]];
+      ? [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["शहर", data.city ?? $("city").value], ["राज्य", data.state ?? $("state").value], ["भोजन कूपन", data.coupons ?? $("coupons").value]]
+      : [["नाम", data.name ?? $("name").value], ["मोबाइल नंबर", data.mobile ?? $("mobile").value], ["पता", data.address ?? $("address").value], ["शहर", data.city ?? $("city").value], ["राज्य", data.state ?? $("state").value], ["पिन कोड", data.pincode ?? $("pincode").value], ["आने का स्थान", data.comingFrom ?? $("comingFrom").value], ["आगमन", (data.checkInDate ?? $("checkInDate").value) + " " + (data.checkInTime ?? $("checkInTime").value)], ["प्रस्थान", (data.checkOutDate ?? $("checkOutDate").value) + " " + (data.checkOutTime ?? $("checkOutTime").value)], ["पुरुष", data.male ?? $("male").value], ["महिलाएँ", data.female ?? $("female").value], ["बच्चे", data.children ?? $("children").value]];
     fields.forEach(([label, value]) => {
       const row = document.createElement("p");
       const strong = document.createElement("strong");
@@ -123,7 +123,7 @@
     kind = next;
     $("kind").value = next;
     ["comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children"].forEach(id => { const field = $(id); if (field) field.required = next === "stay"; });
-    $("registrationCard").classList.remove("event-hidden");
+    $("cityField").classList.toggle("event-hidden", next !== "food"); $("stateField").classList.toggle("event-hidden", next !== "food"); $("pincode").required = next === "stay"; $("pinField").classList.toggle("event-hidden", next !== "stay"); $("registrationCard").classList.remove("event-hidden");
     $("lookupSection").classList.remove("event-hidden");
     $("formFields").classList.add("event-hidden");
     $("foodFields").classList.toggle("event-hidden", next !== "food");
@@ -149,7 +149,7 @@
         return;
       }
       const r = result.registration;
-      ["name", "address", "comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children", "coupons"].forEach(key => { if ($(key) && r[key] !== undefined) $(key).value = r[key]; });
+      ["name", "address", "city", "state", "pincode", "comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children", "coupons"].forEach(key => { if ($(key) && r[key] !== undefined) $(key).value = r[key]; });
       selectedAadhaar = null; $("aadhaar").value = "";
       existingAadhaar = kind === "stay" && Boolean(r.aadhaarUploaded); removeAadhaar = false;
       renderAadhaarPreview();
@@ -170,10 +170,10 @@
     if ($("submit").disabled) return;
     setSubmitting(true);
     try {
-      const data = { kind, mobile: $("mobile").value, name: $("name").value, address: $("address").value };
+      const data = { kind, mobile: $("mobile").value, name: $("name").value, address: $("address").value, city: $("city").value.trim(), state: $("state").value.trim() };
       if (kind === "food") data.coupons = Number($("coupons").value);
       else {
-        Object.assign(data, { comingFrom: $("comingFrom").value, checkInDate: $("checkInDate").value, checkInTime: $("checkInTime").value, checkOutDate: $("checkOutDate").value, checkOutTime: $("checkOutTime").value, male: Number($("male").value), female: Number($("female").value), children: Number($("children").value) });
+        Object.assign(data, { pincode: $("pincode").value.trim(), comingFrom: $("comingFrom").value, checkInDate: $("checkInDate").value, checkInTime: $("checkInTime").value, checkOutDate: $("checkOutDate").value, checkOutTime: $("checkOutTime").value, male: Number($("male").value), female: Number($("female").value), children: Number($("children").value) });
         if (selectedAadhaar) {
           if (selectedAadhaar.size > 5 * 1024 * 1024) throw new Error("आधार फाइल 5 MB से छोटी होनी चाहिए।");
           if (!["application/pdf", "image/jpeg", "image/png"].includes(selectedAadhaar.type)) throw new Error("आधार के लिए PDF, JPG या PNG फ़ाइल चुनें।");
