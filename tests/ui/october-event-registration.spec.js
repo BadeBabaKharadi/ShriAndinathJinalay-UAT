@@ -207,7 +207,14 @@ test("existing lodging registration can be edited without re-uploading Aadhaar",
   await page.getByRole("button", { name: "खोजें और आगे बढ़ें" }).click();
   await expect(page.locator("#confirmation")).toBeVisible();
   await expect(page.locator("#submittedSummary")).toContainText("Existing Traveller");
-  await expect(page.locator("#qr")).toHaveAttribute("data-payload", JSON.stringify({ event: "october-2026", kind: "stay", registrationId: "DKS26-OLD123" }));
+  await expect(page.locator("#qr")).toHaveAttribute(
+    "data-payload",
+    JSON.stringify({
+      event: "october-2026",
+      kind: "stay",
+      registrationId: "DKS26-OLD123",
+    }),
+  );
   await expect(page.locator("#formFields")).toBeHidden();
   await page.getByRole("button", { name: "जानकारी संशोधित करें" }).click();
   await expect(page.locator("#formFields")).toBeVisible();
