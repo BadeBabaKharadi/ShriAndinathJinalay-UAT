@@ -86,7 +86,7 @@
     if (selectedAadhaar) {
       const name = document.createElement("div");
       name.className = "event-aadhaar-file";
-      name.textContent = "चुनी गई फ़ाइल: " + selectedAadhaar.name;
+      name.textContent = "चुनी गई पहचान दस्तावेज़ फ़ाइल: " + selectedAadhaar.name;
       preview.appendChild(name);
       const size = document.createElement("small");
       size.textContent = (selectedAadhaar.size / (1024 * 1024)).toFixed(2) + " MB";
