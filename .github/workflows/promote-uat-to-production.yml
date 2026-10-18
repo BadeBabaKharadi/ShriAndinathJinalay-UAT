@@ -48,6 +48,9 @@ jobs:
         if: ${{ hashFiles('functions/package.json') != '' }}
         run: npm ci --prefix functions
 
+      - name: Install browser runtime
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps chromium
+
       - name: Run required website checks
         run: npm run check
 
