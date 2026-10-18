@@ -173,10 +173,17 @@
       const data = { kind, mobile: $("mobile").value, name: $("name").value, address: $("address").value, city: $("city").value.trim(), state: $("state").value.trim() };
       if (kind === "food") data.coupons = Number($("coupons").value);
       else {
+        const documentType = $("identityDocumentType").value;
+        const documentNumber = $("identityDocumentNumber").value.trim().toUpperCase();
+        const normalizedNumber = documentNumber.replace(/\s+/g, "");
+        const patterns = { aadhaar: /^[2-9][0-9]{11}$/, pan: /^[A-Z]{5}[0-9]{4}[A-Z]$/, driving_license: /^[A-Z0-9 -]{5,20}$/, voter_id: /^[A-Z]{3}[0-9]{7}$/ };
+        if (!patterns[documentType].test(normalizedNumber)) throw new Error(documentType === "aadhaar" ? "आधार नंबर 12 अंकों का होना चाहिए और 0 या 1 से शुरू नहीं होना चाहिए।" : documentType === "pan" ? "पैन नंबर का प्रारूप ABCDE1234F जैसा होना चाहिए।" : documentType === "voter_id" ? "वोटर आईडी का प्रारूप ABC1234567 जैसा होना चाहिए।" : "कृपया सही ड्राइविंग लाइसेंस नंबर दर्ज करें।");
+        data.identityDocumentType = documentType;
+        data.identityDocumentNumber = normalizedNumber;
         Object.assign(data, { pincode: $("pincode").value.trim(), comingFrom: $("comingFrom").value, checkInDate: $("checkInDate").value, checkInTime: $("checkInTime").value, checkOutDate: $("checkOutDate").value, checkOutTime: $("checkOutTime").value, male: Number($("male").value), female: Number($("female").value), children: Number($("children").value) });
         if (selectedAadhaar) {
-          if (selectedAadhaar.size > 5 * 1024 * 1024) throw new Error("आधार फाइल 5 MB से छोटी होनी चाहिए।");
-          if (!["application/pdf", "image/jpeg", "image/png"].includes(selectedAadhaar.type)) throw new Error("आधार के लिए PDF, JPG या PNG फ़ाइल चुनें।");
+          if (selectedAadhaar.size > 5 * 1024 * 1024) throw new Error("दस्तावेज़ फ़ाइल 5 MB से छोटी होनी चाहिए।");
+          if (!["application/pdf", "image/jpeg", "image/png"].includes(selectedAadhaar.type)) throw new Error("दस्तावेज़ के लिए PDF, JPG या PNG फ़ाइल चुनें।");
           data.aadhaarFileName = selectedAadhaar.name;
           data.aadhaarMime = selectedAadhaar.type;
           data.aadhaarBase64 = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(",")[1]); reader.onerror = reject; reader.readAsDataURL(selectedAadhaar); });
