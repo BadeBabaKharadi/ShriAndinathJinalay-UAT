@@ -360,7 +360,9 @@ test("supports lodging check-in starting on 23 October", async ({ page }) => {
   await page.getByRole("button", { name: "खोजें और आगे बढ़ें" }).click();
   await expect(page.locator("#formFields")).toBeVisible();
   await expect(page.locator("#checkInDate")).toContainText("23 अक्टूबर");
-  await expect(page.locator("#checkInDate option").first()).toHaveValue("2026-10-23");
+  await expect(page.locator("#checkInDate option").first()).toHaveValue(
+    "2026-10-23",
+  );
 });
 
 test("new lodging registration includes a selected Aadhaar document", async ({
