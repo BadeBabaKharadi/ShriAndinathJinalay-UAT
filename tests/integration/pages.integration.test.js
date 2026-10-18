@@ -12,8 +12,8 @@ describe("website entry points", () => {
       "kalash.html",
       "admin-7x9p2.html",
       "october-event-registration.html",
-      "october-event-food-admin.html",
-      "october-event-stay-admin.html",
+      "a7f3c9d2e4b6815f.html",
+      "b8e1f6a4c9d2730a.html",
     ];
 
     for (const file of expected) {
