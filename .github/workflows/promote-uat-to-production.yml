@@ -41,21 +41,19 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
+
+      - name: Install Functions dependencies when Functions source exists
+        if: ${{ hashFiles('functions/package.json') != '' }}
+        run: npm ci --prefix functions
 
       - name: Run required website checks
         run: npm run check
 
       - name: Run Functions tests when Functions source exists
-        shell: bash
-        run: |
-          if [[ -d functions && -f functions/package.json ]]; then
-            npm ci --prefix functions
-            npm test --prefix functions
-          else
-            echo "No functions/ package exists in this UAT ref; Functions tests are not applicable to this source snapshot."
-          fi
+        if: ${{ hashFiles('functions/package.json') != '' }}
+        run: npm test --prefix functions
 
       - name: Validate promotion inputs
         id: release
