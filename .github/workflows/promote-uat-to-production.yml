@@ -9,7 +9,7 @@ on:
         type: string
         default: "master"
       paths:
-        description: "Newline-separated paths to promote from that UAT ref. Review the list carefully."
+        description: "Paths to promote from that UAT ref (space-separated or one per line)"
         required: true
         type: string
       release_summary:
@@ -69,7 +69,7 @@ jobs:
           set -euo pipefail
           [[ -n "$SOURCE_REF" ]] || { echo "source_ref is required"; exit 1; }
           [[ -n "$RELEASE_SUMMARY" ]] || { echo "release_summary is required"; exit 1; }
-          printf '%s\n' "$PATHS_INPUT" | sed '/^[[:space:]]*$/d' > /tmp/promotion-paths.txt
+          printf '%s\n' "$PATHS_INPUT" | tr ' ' '\n' | sed '/^[[:space:]]*$/d' > /tmp/promotion-paths.txt
           [[ -s /tmp/promotion-paths.txt ]] || { echo "Provide at least one path to promote."; exit 1; }
           while IFS= read -r path; do
             [[ "$path" != /* && "$path" != *".."* && "$path" != .git* ]] || { echo "Unsafe path: $path"; exit 1; }
@@ -119,12 +119,12 @@ jobs:
           while IFS= read -r path; do
             [[ -n "$path" ]] || continue
             git checkout "$FETCHED_SHA" -- "$path"
-          done <<< "$PATHS_INPUT"
+          done < <(printf '%s\n' "$PATHS_INPUT" | tr ' ' '\n')
           git diff --cached --quiet && git diff --quiet && { echo "Selected paths produce no changes against production master."; exit 1; } || true
           while IFS= read -r path; do
             [[ -n "$path" ]] || continue
             git add -A -- "$path"
-          done <<< "$PATHS_INPUT"
+          done < <(printf '%s\n' "$PATHS_INPUT" | tr ' ' '\n')
           if git diff --cached --quiet; then
             echo "No staged changes found; refusing to open an empty promotion PR."
             exit 1
@@ -147,7 +147,7 @@ jobs:
             printf '%s\n\n' "$RELEASE_SUMMARY"
             printf '**Validated UAT commit:** `%s`\n\n' "$SOURCE_SHA"
             printf '**Promoted paths:**\n'
-            printf '%s\n' "$PATHS_INPUT" | sed '/^[[:space:]]*$/d' | sed 's/^/- `/; s/$/`/'
+            printf '%s\n' "$PATHS_INPUT" | tr ' ' '\n' | sed '/^[[:space:]]*$/d' | sed 's/^/- `/; s/$/`/'
             printf '\n\n## Safety gates\n- UAT website checks passed before this PR was created.\n- Functions tests ran when a Functions package was present.\n- This workflow does not merge the PR or deploy production.\n- Production CI and authorized human approval are still required.\n'
           } > /tmp/promotion-pr.md
           gh pr create --repo BadeBabaKharadi/ShriAndinathJinalay --base master --head "$PROMOTION_BRANCH" --title "Promote UAT release ${SOURCE_SHA:0:7}" --body-file /tmp/promotion-pr.md
