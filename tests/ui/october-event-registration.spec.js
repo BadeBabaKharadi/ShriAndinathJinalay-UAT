@@ -225,8 +225,9 @@ test("existing lodging registration can be edited without re-uploading Aadhaar",
   await expect(page.locator("#name")).toHaveValue("Existing Traveller");
   await page.locator("#name").fill("Updated Traveller");
   await page.locator("#pincode").fill("411014");
+  await page.locator("#identityDocumentNumber").fill("234567890123");
   await page.locator("#checkOutDate").selectOption("2026-10-26");
-  await page.locator("#checkOutTime").fill("10:00");
+  await page.locator("#checkOutTime").selectOption("10:00");
   await page.getByRole("button", { name: "पंजीकरण सुरक्षित करें" }).click();
 
   await expect(page.locator("#confirmCode")).toHaveText("DKS26-OLD123");
@@ -389,8 +390,8 @@ test("new lodging registration includes a selected Aadhaar document", async ({
   await page.locator("#pincode").fill("411014");
   await page.getByLabel("कहाँ से आ रहे हैं? *").fill("Nashik");
   await page.locator("#checkOutDate").selectOption("2026-10-26");
-  await page.locator("#checkInTime").fill("12:30");
-  await page.locator("#checkOutTime").fill("10:00");
+  await page.locator("#checkInTime").selectOption("12:00");
+  await page.locator("#checkOutTime").selectOption("10:00");
   await page.locator("#male").fill("1");
   await page.locator("#female").fill("1");
   await page.locator("#children").fill("0");
