@@ -154,7 +154,7 @@
         ["checkInTime", "checkOutTime"].forEach(key => {
           const field = $(key);
           const time = String(r[key] ?? "");
-          if (!field || !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return;
+          if (!field || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return;
           if (!Array.from(field.options).some(option => option.value === time)) {
             const option = document.createElement("option");
             option.value = time;
