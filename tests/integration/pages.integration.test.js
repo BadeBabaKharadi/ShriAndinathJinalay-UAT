@@ -12,8 +12,8 @@ describe("website entry points", () => {
       "kalash.html",
       "admin-7x9p2.html",
       "october-event-registration.html",
-      "a7f3c9d2e4b6815f.html",
-      "b8e1f6a4c9d2730a.html",
+      "food-admin-a7f3c9d2e4b6815f.html",
+      "stay-admin-b8e1f6a4c9d2730a.html",
     ];
 
     for (const file of expected) {
@@ -31,8 +31,8 @@ describe("website entry points", () => {
 
     for (const file of [
       "october-event-registration.html",
-      "a7f3c9d2e4b6815f.html",
-      "b8e1f6a4c9d2730a.html",
+      "food-admin-a7f3c9d2e4b6815f.html",
+      "stay-admin-b8e1f6a4c9d2730a.html",
     ]) {
       expect(buildScript, `${file} should be published`).toContain(`"${file}"`);
     }
