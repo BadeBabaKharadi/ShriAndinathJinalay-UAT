@@ -150,6 +150,20 @@
       }
       const r = result.registration;
       ["name", "address", "city", "state", "pincode", "comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children", "coupons"].forEach(key => { if ($(key) && r[key] !== undefined) $(key).value = r[key]; });
+      if (kind === "stay") {
+        ["checkInTime", "checkOutTime"].forEach(key => {
+          const field = $(key);
+          const time = String(r[key] ?? "");
+          if (!field || !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return;
+          if (!Array.from(field.options).some(option => option.value === time)) {
+            const option = document.createElement("option");
+            option.value = time;
+            option.textContent = time + " (पहले से दर्ज)";
+            field.appendChild(option);
+          }
+          field.value = time;
+        });
+      }
       selectedAadhaar = null; $("aadhaar").value = "";
       existingAadhaar = kind === "stay" && Boolean(r.aadhaarUploaded); legacyStayWithoutIdentity = kind === "stay" && !r.identityDocumentNumber; removeAadhaar = false;
       renderAadhaarPreview();
