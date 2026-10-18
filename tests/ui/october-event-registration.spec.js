@@ -224,6 +224,7 @@ test("existing lodging registration can be edited without re-uploading Aadhaar",
   await expect(page.locator("#formFields")).toBeVisible();
   await expect(page.locator("#name")).toHaveValue("Existing Traveller");
   await expect(page.locator("#checkInTime")).toHaveValue("12:30");
+  await expect(page.locator("#aadhaar")).not.toHaveAttribute("required", "");
   await page.locator("#name").fill("Updated Traveller");
   await page.locator("#city").fill("Pune");
   await page.locator("#state").fill("Maharashtra");
