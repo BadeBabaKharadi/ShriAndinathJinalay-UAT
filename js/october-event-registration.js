@@ -123,7 +123,7 @@
     kind = next;
     $("kind").value = next;
     ["comingFrom", "checkInDate", "checkInTime", "checkOutDate", "checkOutTime", "male", "female", "children"].forEach(id => { const field = $(id); if (field) field.required = next === "stay"; });
-    $("cityField").classList.toggle("event-hidden", next !== "food"); $("stateField").classList.toggle("event-hidden", next !== "food"); $("pincode").required = next === "stay"; $("pinField").classList.toggle("event-hidden", next !== "stay"); $("registrationCard").classList.remove("event-hidden");
+    $("cityField").classList.toggle("event-hidden", next !== "food"); $("stateField").classList.toggle("event-hidden", next !== "food"); $("city").required = next === "food"; $("state").required = next === "food"; $("pincode").required = next === "stay"; $("pinField").classList.toggle("event-hidden", next !== "stay"); $("registrationCard").classList.remove("event-hidden");
     $("lookupSection").classList.remove("event-hidden");
     $("formFields").classList.add("event-hidden");
     $("foodFields").classList.toggle("event-hidden", next !== "food");
