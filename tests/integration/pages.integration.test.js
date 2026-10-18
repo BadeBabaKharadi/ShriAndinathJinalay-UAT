@@ -31,8 +31,8 @@ describe("website entry points", () => {
 
     for (const file of [
       "october-event-registration.html",
-      "october-event-food-admin.html",
-      "october-event-stay-admin.html",
+      "a7f3c9d2e4b6815f.html",
+      "b8e1f6a4c9d2730a.html",
     ]) {
       expect(buildScript, `${file} should be published`).toContain(`"${file}"`);
     }
