@@ -1,0 +1,152 @@
+name: Promote UAT release to production
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: "UAT branch, tag, or commit SHA to promote"
+        required: true
+        type: string
+        default: "master"
+      paths:
+        description: "Newline-separated paths to promote from that UAT ref. Review the list carefully."
+        required: true
+        type: string
+      release_summary:
+        description: "Short release summary for the production PR"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uat-production-promotion
+  cancel-in-progress: false
+
+jobs:
+  validate-and-propose:
+    name: Validate UAT and open production PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out selected UAT ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run required website checks
+        run: npm run check
+
+      - name: Run Functions tests when Functions source exists
+        shell: bash
+        run: |
+          if [[ -d functions && -f functions/package.json ]]; then
+            npm ci --prefix functions
+            npm test --prefix functions
+          else
+            echo "No functions/ package exists in this UAT ref; Functions tests are not applicable to this source snapshot."
+          fi
+
+      - name: Validate promotion inputs
+        id: release
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+          PATHS_INPUT: ${{ inputs.paths }}
+          RELEASE_SUMMARY: ${{ inputs.release_summary }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$SOURCE_REF" ]] || { echo "source_ref is required"; exit 1; }
+          [[ -n "$RELEASE_SUMMARY" ]] || { echo "release_summary is required"; exit 1; }
+          printf '%s\n' "$PATHS_INPUT" | sed '/^[[:space:]]*$/d' > /tmp/promotion-paths.txt
+          [[ -s /tmp/promotion-paths.txt ]] || { echo "Provide at least one path to promote."; exit 1; }
+          while IFS= read -r path; do
+            [[ "$path" != /* && "$path" != *".."* && "$path" != .git* ]] || { echo "Unsafe path: $path"; exit 1; }
+            [[ -e "$path" ]] || { echo "Path does not exist in selected UAT ref: $path"; exit 1; }
+            case "$path" in
+              .github|.github/*)
+                echo "GitHub Actions/workflow files cannot be promoted through this path-scoped release action. Review deployment workflows separately."
+                exit 1
+                ;;
+              .firebaserc)
+                echo "The Firebase project binding is environment-specific and cannot be copied from UAT to production."
+                exit 1
+                ;;
+            esac
+          done < /tmp/promotion-paths.txt
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "branch=promote/uat-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "Validated paths:"
+          cat /tmp/promotion-paths.txt
+
+      - name: Prepare production branch with selected files
+        env:
+          PROD_PROMOTION_TOKEN: ${{ secrets.PROD_PROMOTION_TOKEN }}
+          SOURCE_REF: ${{ inputs.source_ref }}
+          SOURCE_SHA: ${{ steps.release.outputs.source_sha }}
+          PROMOTION_BRANCH: ${{ steps.release.outputs.branch }}
+          PATHS_INPUT: ${{ inputs.paths }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$PROD_PROMOTION_TOKEN" ]]; then
+            echo "Missing PROD_PROMOTION_TOKEN secret. Add a narrowly scoped token with Contents: read/write and Pull requests: read/write on the production repository."
+            exit 1
+          fi
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone "https://x-access-token:${PROD_PROMOTION_TOKEN}@github.com/BadeBabaKharadi/ShriAndinathJinalay.git" /tmp/production
+          cd /tmp/production
+          git checkout -b "$PROMOTION_BRANCH" origin/master
+          git remote add uat "https://github.com/BadeBabaKharadi/ShriAndinathJinalay-UAT.git"
+          git fetch uat "$SOURCE_REF"
+          FETCHED_SHA="$(git rev-parse FETCH_HEAD)"
+          if [[ "$FETCHED_SHA" != "$SOURCE_SHA" ]]; then
+            echo "Fetched UAT ref does not match the validated source SHA; refusing to promote."
+            exit 1
+          fi
+          while IFS= read -r path; do
+            [[ -n "$path" ]] || continue
+            git checkout "$FETCHED_SHA" -- "$path"
+          done <<< "$PATHS_INPUT"
+          git diff --cached --quiet && git diff --quiet && { echo "Selected paths produce no changes against production master."; exit 1; } || true
+          while IFS= read -r path; do
+            [[ -n "$path" ]] || continue
+            git add -A -- "$path"
+          done <<< "$PATHS_INPUT"
+          if git diff --cached --quiet; then
+            echo "No staged changes found; refusing to open an empty promotion PR."
+            exit 1
+          fi
+          git commit -m "Promote UAT release ${SOURCE_SHA:0:7}"
+          git push origin "$PROMOTION_BRANCH"
+
+      - name: Open production pull request
+        env:
+          GH_TOKEN: ${{ secrets.PROD_PROMOTION_TOKEN }}
+          PROMOTION_BRANCH: ${{ steps.release.outputs.branch }}
+          SOURCE_SHA: ${{ steps.release.outputs.source_sha }}
+          RELEASE_SUMMARY: ${{ inputs.release_summary }}
+          PATHS_INPUT: ${{ inputs.paths }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf '## UAT-to-production promotion\n\n'
+            printf '%s\n\n' "$RELEASE_SUMMARY"
+            printf '**Validated UAT commit:** `%s`\n\n' "$SOURCE_SHA"
+            printf '**Promoted paths:**\n'
+            printf '%s\n' "$PATHS_INPUT" | sed '/^[[:space:]]*$/d' | sed 's/^/- `/; s/$/`/'
+            printf '\n\n## Safety gates\n- UAT website checks passed before this PR was created.\n- Functions tests ran when a Functions package was present.\n- This workflow does not merge the PR or deploy production.\n- Production CI and authorized human approval are still required.\n'
+          } > /tmp/promotion-pr.md
+          gh pr create --repo BadeBabaKharadi/ShriAndinathJinalay --base master --head "$PROMOTION_BRANCH" --title "Promote UAT release ${SOURCE_SHA:0:7}" --body-file /tmp/promotion-pr.md
