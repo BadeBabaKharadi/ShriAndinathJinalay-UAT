@@ -48,7 +48,7 @@ function validateStay(input, { allowExistingAadhaar = false } = {}) {
   const checkOutTime = String(input.checkOutTime || "");
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(checkOutTime)) throw new Error("Enter a valid check-out time.");
   if (`${checkOutDate}T${checkOutTime}` <= `${checkInDate}T${input.checkInTime}`) throw new Error("Check-out must be after check-in.");
-  const documentType = String(input.identityDocumentType || "aadhaar");
+  const documentType = String(input.identityDocumentType || "");
   const documentNumber = String(input.identityDocumentNumber || "").replace(/\s+/g, "").toUpperCase();
   const documentPatterns = {
     aadhaar: /^[2-9][0-9]{11}$/,
@@ -56,8 +56,8 @@ function validateStay(input, { allowExistingAadhaar = false } = {}) {
     driving_license: /^[A-Z0-9-]{5,20}$/,
     voter_id: /^[A-Z]{3}[0-9]{7}$/,
   };
-  if (!Object.hasOwn(documentPatterns, documentType)) throw new Error("Select a valid identity document type.");
-  if (!documentPatterns[documentType].test(documentNumber)) {
+  if (documentType && !Object.hasOwn(documentPatterns, documentType)) throw new Error("Select a valid identity document type.");
+  if (documentType && !documentPatterns[documentType].test(documentNumber)) {
     throw new Error(documentType === "aadhaar"
       ? "Aadhaar number must contain 12 digits and cannot start with 0 or 1."
       : documentType === "pan"
@@ -66,8 +66,8 @@ function validateStay(input, { allowExistingAadhaar = false } = {}) {
           ? "Voter ID must match the format ABC1234567."
           : "Enter a valid driving licence number.");
   }
-  const base = { mobile, name: required(input.name, "Name"), address: required(input.address, "Address"), city: required(input.city, "City"), state: required(input.state, "State"), pincode: String(input.pincode || "").trim(), comingFrom: required(input.comingFrom, "Where are you travelling from"), male, female, children, checkInDate, checkInTime: input.checkInTime, checkOutDate, checkOutTime, identityDocumentType: documentType, identityDocumentNumber: documentNumber };
-  if (!/^[0-9]{6}$/.test(base.pincode)) throw new Error("PIN code must contain six digits.");
+  const base = { mobile, name: required(input.name, "Name"), address: required(input.address, "Address"), ...(input.city !== undefined ? { city: required(input.city, "City") } : {}), ...(input.state !== undefined ? { state: required(input.state, "State") } : {}), ...(input.pincode !== undefined ? { pincode: String(input.pincode || "").trim() } : {}), comingFrom: required(input.comingFrom, "Where are you travelling from"), male, female, children, checkInDate, checkInTime: input.checkInTime, checkOutDate, checkOutTime, ...(documentType ? { identityDocumentType: documentType, identityDocumentNumber: documentNumber } : {}) };
+  if (base.pincode !== undefined && !/^[0-9]{6}$/.test(base.pincode)) throw new Error("PIN code must contain six digits.");
   const rawBase64 = String(input.aadhaarBase64 || "").replace(/^data:[^,]+,/, "");
   if (!rawBase64 && allowExistingAadhaar && input.removeAadhaar === true) return { ...base, removeExistingAadhaar: true };
   if (!rawBase64 && allowExistingAadhaar) return { ...base, preserveExistingAadhaar: true };
