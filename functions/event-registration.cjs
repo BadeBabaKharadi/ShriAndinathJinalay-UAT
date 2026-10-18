@@ -49,7 +49,7 @@ function validateStay(input, { allowExistingAadhaar = false } = {}) {
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(checkOutTime)) throw new Error("Enter a valid check-out time.");
   if (`${checkOutDate}T${checkOutTime}` <= `${checkInDate}T${input.checkInTime}`) throw new Error("Check-out must be after check-in.");
   const documentType = String(input.identityDocumentType || "aadhaar");
-  const documentNumber = String(input.identityDocumentNumber || "").replace(/\\s+/g, "").toUpperCase();
+  const documentNumber = String(input.identityDocumentNumber || "").replace(/\s+/g, "").toUpperCase();
   const documentPatterns = {
     aadhaar: /^[2-9][0-9]{11}$/,
     pan: /^[A-Z]{5}[0-9]{4}[A-Z]$/,
