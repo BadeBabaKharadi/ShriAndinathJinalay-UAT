@@ -249,7 +249,7 @@ test("lodging admin denies an incorrect admin key", async ({ page }) => {
     },
   );
   await handleCallablePreflight(page);
-  await page.goto("/october-event-stay-admin.html");
+  await page.goto("/stay-admin-b8e1f6a4c9d2730a.html");
   await page.locator("#key").fill("wrong-key");
   await page.getByRole("button", { name: "सत्यापित करें" }).click();
   await expect(page.locator("#msg")).toHaveText("Unauthorized.");
@@ -313,7 +313,7 @@ test("authorized food admin can view details and export the filtered list", asyn
   );
 
   await handleCallablePreflight(page);
-  await page.goto("/october-event-food-admin.html");
+  await page.goto("/food-admin-a7f3c9d2e4b6815f.html");
   await page.locator("#key").fill("correct-key");
   await page.getByRole("button", { name: "सत्यापित करें" }).click();
   await expect(page.locator("#rows")).toContainText("Test Person");
