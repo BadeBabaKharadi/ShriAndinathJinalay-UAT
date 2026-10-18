@@ -206,7 +206,9 @@ test("existing lodging registration can be edited without re-uploading Aadhaar",
   await page.getByLabel("मोबाइल नंबर *").fill("9876543210");
   await page.getByRole("button", { name: "खोजें और आगे बढ़ें" }).click();
   await expect(page.locator("#confirmation")).toBeVisible();
-  await expect(page.locator("#submittedSummary")).toContainText("Existing Traveller");
+  await expect(page.locator("#submittedSummary")).toContainText(
+    "Existing Traveller",
+  );
   await expect(page.locator("#qr")).toHaveAttribute(
     "data-payload",
     JSON.stringify({
