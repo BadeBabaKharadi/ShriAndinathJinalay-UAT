@@ -7,14 +7,14 @@ const hide=id=>$(id).classList.add("booth-hidden"), show=id=>$(id).classList.rem
 function msg(text,error=false){$("status").textContent=text;$("status").style.borderLeft=error?"4px solid #b42318":"4px solid #d8aa63";}
 function mobileValue(){return $("mobile").value.replace(/\D/g,"").slice(-10);}
 function setBusy(button,busy,label){button.disabled=busy;button.innerHTML=busy?'<span class="booth-spin" aria-hidden="true"></span>'+label:(button.dataset.label||"पंजीकरण जमा करें");}
-async function call(name,data){const base=window.BOOTH_FUNCTIONS_BASE;if(!base)throw new Error("UAT backend is not configured. Please configure the dedicated UAT Firebase Functions endpoint before testing.");let response;try{response=await fetch(base+"/"+name,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({data})});}catch(e){throw new Error("सर्वर से कनेक्शन नहीं हो पाया। कृपया बाद में पुनः प्रयास करें।");}let json;try{json=await response.json();}catch(e){throw new Error("सर्वर से अमान्य उत्तर मिला।");}if(!response.ok||json.error)throw new Error(json.error?.message||"अनुरोध विफल हुआ।");return json.result??json.data;}
+async function call(name,data){const base=window.BOOTH_FUNCTIONS_BASE;if(!base)throw new Error("पंजीकरण सेवा अभी उपलब्ध नहीं है। कृपया आयोजन समिति से संपर्क करें।");let response;try{response=await fetch(base+"/"+name,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({data})});}catch(e){throw new Error("पंजीकरण सेवा से कनेक्शन नहीं हो पाया। कृपया कुछ देर बाद पुनः प्रयास करें।");}let json;try{json=await response.json();}catch(e){throw new Error("सर्वर से अमान्य उत्तर मिला।");}if(!response.ok||json.error)throw new Error(json.error?.message||"अनुरोध विफल हुआ।");return json.result??json.data;}
 function setupFirebase(){$("availability").textContent=window.BOOTH_FUNCTIONS_BASE?"UAT पंजीकरण सेवा कॉन्फ़िगर है। मोबाइल नंबर से अपनी स्थिति जाँचें।":"UAT backend configuration pending — अभी वास्तविक आवेदन जमा न करें।";}
 function showQr(){
 const upi=window.BOOTH_PAYMENT_UPI_ID;
 const qrImage=window.BOOTH_PAYMENT_QR_IMAGE;
-if(!upi&&!qrImage){$("qrBox").textContent="भुगतान QR उपलब्ध नहीं है। ट्रस्ट का आधिकारिक UPI ID/QR कॉन्फ़िगर होने तक भुगतान न करें।";return;}
+if(!upi&&!qrImage){$("qrBox").textContent="भुगतान QR अभी लोड नहीं हो पाया। कृपया आयोजन समिति से QR प्राप्त करें।";return;}
 $("qrBox").replaceChildren();
-if(qrImage){const img=document.createElement("img");img.src=qrImage;img.alt="Kharadi Jain Samaj Trust का आधिकारिक भुगतान QR";img.className="booth-qr";$("qrBox").append(img);}
+if(qrImage){const img=document.createElement("img");img.src=qrImage;img.alt="मंदिर भुगतान QR";img.className="booth-qr";img.onerror=()=>{img.remove();$("qrBox").textContent="भुगतान QR लोड नहीं हो पाया। कृपया आयोजन समिति से संपर्क करें।";};$("qrBox").append(img);}
 else if(window.QRCode){const uri="upi://pay?pa="+encodeURIComponent(upi)+"&pn="+encodeURIComponent("Kharadi Jain Samaj Trust")+"&am="+EVENT_FEE+"&cu=INR&tn="+encodeURIComponent("Booth booking 25 Oct 2026");const holder=document.createElement("div");holder.className="booth-qr";$("qrBox").append(holder);new QRCode(holder,{text:uri,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});}
 else{$("qrBox").textContent="QR कोड लोड नहीं हो पाया। कृपया पृष्ठ रीफ़्रेश करें।";return;}
 const t=document.createElement("p");t.textContent=(upi?"UPI ID: "+upi+" · ":"")+"राशि ₹2,100";$("qrBox").append(t);
