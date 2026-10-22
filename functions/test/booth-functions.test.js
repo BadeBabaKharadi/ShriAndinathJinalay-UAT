@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const { readFileSync } = require("node:fs");
 const path = require("node:path");
 
-test("booth form requires every requested field and uses placeholders for examples", () => {
+test(\n  "booth form requires every requested field and uses placeholders for examples",\n  () => {
   const html = readFileSync(
     path.join(__dirname, "../../booth-registration.html"),
     "utf8",
@@ -29,7 +29,7 @@ test("booth form requires every requested field and uses placeholders for exampl
   assert.match(html, /टेबल और 2 कुर्सियाँ/);
 });
 
-test("mobile validation accepts valid Indian numbers and rejects invalid ones", () => {
+test(\n  "mobile validation accepts valid Indian numbers and rejects invalid ones",\n  () => {
   const validMobile = /^[6-9]\d{9}$/;
   assert.equal(validMobile.test("9876543210"), true);
   assert.equal(validMobile.test("123"), false);
