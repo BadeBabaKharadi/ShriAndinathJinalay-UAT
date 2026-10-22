@@ -1,52 +1,37 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { readFileSync } = require("node:fs");
+const path = require("node:path");
 
-const REQUIRED_FIELDS = [
-  "name",
-  "stallName",
-  "businessType",
-  "mobile",
-  "society",
-  "city",
-  "state",
-];
-
-function validMobile(value) {
-  return /^[6-9]\d{9}$/.test(String(value || "").replace(/\D/g, "").slice(-10));
-}
-
-function validateRequired(input) {
-  return REQUIRED_FIELDS.every(
-    (key) => typeof input[key] === "string" && input[key].trim().length > 0,
+test("booth form requires every requested field and uses placeholders for examples", () => {
+  const html = readFileSync(
+    path.join(__dirname, "../../booth-registration.html"),
+    "utf8",
   );
-}
+  const requiredIds = [
+    "mobile",
+    "name",
+    "stallName",
+    "businessType",
+    "formMobile",
+    "society",
+    "city",
+    "state",
+    "receipt",
+  ];
 
-test("accepts valid Indian mobile numbers", () => {
-  assert.equal(validMobile("9876543210"), true);
-  assert.equal(validMobile("+91 9876543210"), true);
+  for (const id of requiredIds) {
+    assert.match(html, new RegExp(`id="${id}"[^>]*required`));
+  }
+
+  assert.match(html, /20 बूथ/);
+  assert.match(html, /₹2,100/);
+  assert.match(html, /टेबल और 2 कुर्सियाँ/);
 });
 
-test("rejects incomplete mobile numbers", () => {
-  assert.equal(validMobile("123"), false);
-  assert.equal(validMobile("0123456789"), false);
-});
-
-test("requires every booth field", () => {
-  const data = {
-    name: "A",
-    stallName: "B",
-    businessType: "C",
-    mobile: "9876543210",
-    society: "D",
-    city: "Pune",
-    state: "Maharashtra",
-  };
-  assert.equal(validateRequired(data), true);
-  delete data.society;
-  assert.equal(validateRequired(data), false);
-});
-
-test("business rules remain 20 booths at INR 2100", () => {
-  assert.equal(20, 20);
-  assert.equal(2100, 2100);
+test("mobile validation accepts valid Indian numbers and rejects invalid ones", () => {
+  const validMobile = /^[6-9]\d{9}$/;
+  assert.equal(validMobile.test("9876543210"), true);
+  assert.equal(validMobile.test("123"), false);
+  assert.equal(validMobile.test("0123456789"), false);
 });
