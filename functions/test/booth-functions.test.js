@@ -4,10 +4,9 @@ const { readFileSync } = require("node:fs");
 const path = require("node:path");
 
 test("booth form requires all fields", () => {
-  const html = readFileSync(
-    path.join(__dirname, "../../booth-registration.html"),
-    "utf8",
-  );
+  const cwd = process.cwd();
+  const root = path.basename(cwd) === "functions" ? path.dirname(cwd) : cwd;
+  const html = readFileSync(path.join(root, "booth-registration.html"), "utf8");
   const requiredIds = [
     "mobile",
     "name",
