@@ -1,12 +1,22 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+const REQUIRED_FIELDS = [
+  "name",
+  "stallName",
+  "businessType",
+  "mobile",
+  "society",
+  "city",
+  "state",
+];
+
 function validMobile(value) {
   return /^[6-9]\d{9}$/.test(String(value || "").replace(/\D/g, "").slice(-10));
 }
 
 function validateRequired(input) {
-  return ["name", "stallName", "businessType", "mobile", "society", "city", "state"].every(
+  return REQUIRED_FIELDS.every(
     (key) => typeof input[key] === "string" && input[key].trim().length > 0,
   );
 }
