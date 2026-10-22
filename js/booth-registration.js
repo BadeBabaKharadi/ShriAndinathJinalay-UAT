@@ -2,12 +2,12 @@
 "use strict";
 const $=id=>document.getElementById(id);
 const EVENT_FEE=2100;
-let existing=false, saved=null, receiptData=null, receiptMime="", receiptPreviewUrl=null, firebaseReady=false, functions=null;
+let existing=false, saved=null, receiptData=null, receiptMime="", receiptPreviewUrl=null;
 const hide=id=>$(id).classList.add("booth-hidden"), show=id=>$(id).classList.remove("booth-hidden");
 function msg(text,error=false){$("status").textContent=text;$("status").style.borderLeft=error?"4px solid #b42318":"4px solid #d8aa63";}
 function mobileValue(){return $("mobile").value.replace(/\D/g,"").slice(-10);}
 function setBusy(button,busy,label){button.disabled=busy;button.innerHTML=busy?'<span class="booth-spin" aria-hidden="true"></span>'+label:button.dataset.label;}
-function call(name,data){if(!functions)throw new Error("Firebase configuration is missing. Please configure booth Firebase initialization before UAT testing.");return functions.httpsCallable(name)(data).then(r=>r.data);}
+async function call(name,data){const base=location.hostname==="localhost"||location.hostname==="127.0.0.1"?"http://127.0.0.1:5001/jain-community-platform/asia-south1":"https://asia-south1-jain-community-platform.cloudfunctions.net";let response;try{response=await fetch(base+"/"+name,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({data})});}catch(e){throw new Error("सर्वर से कनेक्शन नहीं हो पाया। कृपया बाद में पुनः प्रयास करें।");}let json;try{json=await response.json();}catch(e){throw new Error("सर्वर से अमान्य उत्तर मिला।");}if(!response.ok||json.error)throw new Error(json.error?.message||"अनुरोध विफल हुआ।");return json.result??json.data;}
 function setupFirebase(){
  if(!window.BOOTH_FIREBASE_CONFIG){$("availability").textContent="Firebase setup pending: add the existing production Firebase web config to js/booth-config.js (do not put admin secrets here).";return;}
  try{if(!firebase.apps.length)firebase.initializeApp(window.BOOTH_FIREBASE_CONFIG);functions=firebase.app().functions("asia-south1");firebaseReady=true;call("boothLookup",{mobile:"9876543210"}).then(()=>{}).catch(()=>{});$("availability").textContent="पंजीकरण सेवा उपलब्ध है। मोबाइल नंबर से अपनी स्थिति जाँचें।";}catch(e){$("availability").textContent="Firebase configuration error: "+e.message;}
