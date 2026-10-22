@@ -1,5 +1,5 @@
 const test=require("node:test");const assert=require("node:assert/strict");
-function validMobile(v){return /^[6-9]\\d{9}$/.test(String(v||"").replace(/\\D/g,"").slice(-10));}
+function validMobile(v){return /^[6-9]\d{9}$/.test(String(v||"").replace(/\D/g,"").slice(-10));}
 function validateRequired(input){return ["name","stallName","businessType","mobile","society","city","state"].every(k=>typeof input[k]==="string"&&input[k].trim().length>0)}
 test("accepts valid Indian mobile numbers",()=>{assert.equal(validMobile("9876543210"),true);assert.equal(validMobile("+91 9876543210"),true)});
 test("rejects incomplete mobile numbers",()=>{assert.equal(validMobile("123"),false);assert.equal(validMobile("0123456789"),false)});
