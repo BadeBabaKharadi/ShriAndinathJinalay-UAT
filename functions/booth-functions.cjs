@@ -3,6 +3,7 @@ const { getStorage } = require("firebase-admin/storage");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { randomUUID } = require("node:crypto");
+const { Buffer } = require("node:buffer");
 const { FIRESTORE_DATABASE_ID } = require("./config");
 const ADMIN_KEY = defineSecret("OCTOBER_EVENT_ADMIN_KEY");
 const EVENT_ID = "booth-2026-10-25";
