@@ -1,4 +1,3 @@
-// Configure with the existing public Firebase web app settings from production.
-// Never place service-account credentials or admin secrets in this file.
-window.BOOTH_FIREBASE_CONFIG = null; // Replace null with the existing Firebase web config object.
-window.BOOTH_PAYMENT_UPI_ID = ""; // Set only after confirming the Trust's official UPI ID.
+// Set this only to the official Kharadi Jain Samaj Trust UPI ID after verification.
+// Example format: trustname@bank (example only; do not use an unverified value).
+window.BOOTH_PAYMENT_UPI_ID = "";
