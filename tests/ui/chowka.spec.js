@@ -65,17 +65,14 @@ async function expectNoBrowserErrors(errors) {
 }
 
 test.describe("Chowka section on home page", () => {
-  test(
-    "loads Chowka JavaScript without browser errors",
-    async ({ page }) => {
-      const errors = collectBrowserErrors(page);
-      await freezeToday(page);
-      await mockChowkaApi(page, []);
-      await page.goto("/index.html");
-      await expect(page.locator("#chowka-date")).toBeVisible();
-      await expectNoBrowserErrors(errors);
-    },
-  );
+  test("loads Chowka JavaScript without browser errors", async ({ page }) => {
+    const errors = collectBrowserErrors(page);
+    await freezeToday(page);
+    await mockChowkaApi(page, []);
+    await page.goto("/index.html");
+    await expect(page.locator("#chowka-date")).toBeVisible();
+    await expectNoBrowserErrors(errors);
+  });
 
   test(
     "requires all three Maharaj and sorts their entries in the requested order",
@@ -147,20 +144,17 @@ test.describe("Chowka section on home page", () => {
     },
   );
 
-  test(
-    "sets today as maximum and 30 days ago as minimum",
-    async ({ page }) => {
-      const errors = collectBrowserErrors(page);
-      await freezeToday(page);
-      await mockChowkaApi(page, []);
-      await page.goto("/index.html");
-      const dateInput = page.locator("#chowka-date");
-      await expect(dateInput).toHaveAttribute("max", TODAY);
-      await expect(dateInput).toHaveAttribute("min", THIRTY_DAYS_AGO);
-      await expect(dateInput).toHaveValue(TODAY);
-      await expectNoBrowserErrors(errors);
-    },
-  );
+  test("sets today as maximum and 30 days ago as minimum", async ({ page }) => {
+    const errors = collectBrowserErrors(page);
+    await freezeToday(page);
+    await mockChowkaApi(page, []);
+    await page.goto("/index.html");
+    const dateInput = page.locator("#chowka-date");
+    await expect(dateInput).toHaveAttribute("max", TODAY);
+    await expect(dateInput).toHaveAttribute("min", THIRTY_DAYS_AGO);
+    await expect(dateInput).toHaveValue(TODAY);
+    await expectNoBrowserErrors(errors);
+  });
 
   test("allows exactly 30 days ago", async ({ page }) => {
     const errors = collectBrowserErrors(page);
