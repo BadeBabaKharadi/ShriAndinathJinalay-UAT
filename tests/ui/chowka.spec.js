@@ -168,7 +168,6 @@ test.describe("Chowka section on home page", () => {
     await dateInput.dispatchEvent("change");
     await expect(dateInput).toHaveValue(THIRTY_DAYS_AGO);
     await expectNoBrowserErrors(errors);
-    },
   });
 
   test("rejects a future date", async ({ page }) => {
@@ -181,7 +180,6 @@ test.describe("Chowka section on home page", () => {
     await dateInput.dispatchEvent("change");
     await expect(dateInput).toHaveValue(TODAY);
     await expectNoBrowserErrors(errors);
-    },
   });
 
   test("rejects a date older than 30 days", async ({ page }) => {
@@ -194,6 +192,5 @@ test.describe("Chowka section on home page", () => {
     await dateInput.dispatchEvent("change");
     await expect(dateInput).toHaveValue(TODAY);
     await expectNoBrowserErrors(errors);
-    },
   });
 });
