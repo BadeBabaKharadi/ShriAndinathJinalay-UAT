@@ -76,6 +76,7 @@ test.describe("Chowka section on home page", () => {
       await expectNoBrowserErrors(errors);
     },
   );
+
   test(
     "requires all three Maharaj and sorts their entries in the requested order",
     async ({ page }) => {
@@ -160,6 +161,7 @@ test.describe("Chowka section on home page", () => {
       await expectNoBrowserErrors(errors);
     },
   );
+
   test(
     "allows exactly 30 days ago",
     async ({ page }) => {
@@ -174,6 +176,7 @@ test.describe("Chowka section on home page", () => {
       await expectNoBrowserErrors(errors);
     },
   );
+
   test(
     "rejects a future date",
     async ({ page }) => {
@@ -188,6 +191,7 @@ test.describe("Chowka section on home page", () => {
       await expectNoBrowserErrors(errors);
     },
   );
+
   test(
     "rejects a date older than 30 days",
     async ({ page }) => {
