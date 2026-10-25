@@ -64,7 +64,7 @@ describe("Chowka Maharaj completion rule", () => {
     expect(
       bothMaharajUpdated([
         { maharaj: "१०८ मुनि श्री अजित सागर जी" },
-        { maharaj: "१०८ मुनि श्री विदित सागर जी" },
+        { maharaj: "ऐलक श्री विवेकानंद सागर जी" },
         { maharaj: "१०५ ऐलक श्री विजित सागर जी" },
       ]),
     ).toBe(true);
