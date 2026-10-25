@@ -74,8 +74,7 @@ test.describe("Chowka section on home page", () => {
       await page.goto("/index.html");
       await expect(page.locator("#chowka-date")).toBeVisible();
       await expectNoBrowserErrors(errors);
-    },
-  );
+  });
 
   test(
     "requires all three Maharaj and sorts their entries in the requested order",
@@ -116,8 +115,7 @@ test.describe("Chowka section on home page", () => {
       await expect(rows.nth(3).locator("td").nth(3)).toHaveText("");
       await expect(page.locator(".not-confirmed")).toHaveCount(0);
       await expectNoBrowserErrors(errors);
-    },
-  );
+  });
 
   test(
     "keeps remaining rows unconfirmed until all three Maharaj have entries",
@@ -144,8 +142,7 @@ test.describe("Chowka section on home page", () => {
         "पड़गाहन के बाद अपडेट होगा",
       );
       await expectNoBrowserErrors(errors);
-    },
-  );
+  });
 
   test(
     "sets today as maximum and 30 days ago as minimum",
@@ -159,8 +156,7 @@ test.describe("Chowka section on home page", () => {
       await expect(dateInput).toHaveAttribute("min", THIRTY_DAYS_AGO);
       await expect(dateInput).toHaveValue(TODAY);
       await expectNoBrowserErrors(errors);
-    },
-  );
+  });
 
   test("allows exactly 30 days ago", async ({ page }) => {
     const errors = collectBrowserErrors(page);
