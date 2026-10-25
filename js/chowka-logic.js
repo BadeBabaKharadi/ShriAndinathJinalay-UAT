@@ -2,8 +2,8 @@
 const REQUIRED = ["AjitSagarJi", "ViditSagarJi", "VijitSagarJi"];
 const ALIASES = [
   ["ajitsagarji", "मुनिश्रीअजितसागरजी"],
-  ["viditsagarji", "vivekanandsagarji", "मुनिश्रीविदितसागरजी", "एलकश्रीविवेकानंदसागरजी"],
-  ["vijitsagarji", "adarshbhaiyaji", "एलकश्रीविजितसागरजी"],
+  ["viditsagarji", "vivekanandsagarji", "मुनिश्रीविदितसागरजी", "ऐलकश्रीविवेकानंदसागरजी", "एलकश्रीविवेकानंदसागरजी"],
+  ["vijitsagarji", "adarshbhaiyaji", "आदर्शभैयाजी", "ऐलकश्रीविजितसागरजी", "एलकश्रीविजितसागरजी"],
 ];
 const normalize = (value) => String(value || "").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u0900-\u097f]/g, "");
 function rank(value) {
