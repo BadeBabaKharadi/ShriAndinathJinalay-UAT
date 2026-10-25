@@ -162,48 +162,42 @@ test.describe("Chowka section on home page", () => {
     },
   );
 
-  test(
-    "allows exactly 30 days ago",
-    async ({ page }) => {
-      const errors = collectBrowserErrors(page);
-      await freezeToday(page);
-      await mockChowkaApi(page, []);
-      await page.goto("/index.html");
-      const dateInput = page.locator("#chowka-date");
-      await dateInput.fill(THIRTY_DAYS_AGO);
-      await dateInput.dispatchEvent("change");
-      await expect(dateInput).toHaveValue(THIRTY_DAYS_AGO);
-      await expectNoBrowserErrors(errors);
+  test("allows exactly 30 days ago", async ({ page }) => {
+    const errors = collectBrowserErrors(page);
+    await freezeToday(page);
+    await mockChowkaApi(page, []);
+    await page.goto("/index.html");
+    const dateInput = page.locator("#chowka-date");
+    await dateInput.fill(THIRTY_DAYS_AGO);
+    await dateInput.dispatchEvent("change");
+    await expect(dateInput).toHaveValue(THIRTY_DAYS_AGO);
+    await expectNoBrowserErrors(errors);
     },
-  );
+  });
 
-  test(
-    "rejects a future date",
-    async ({ page }) => {
-      const errors = collectBrowserErrors(page);
-      await freezeToday(page);
-      await mockChowkaApi(page, []);
-      await page.goto("/index.html");
-      const dateInput = page.locator("#chowka-date");
-      await dateInput.fill(TOMORROW);
-      await dateInput.dispatchEvent("change");
-      await expect(dateInput).toHaveValue(TODAY);
-      await expectNoBrowserErrors(errors);
+  test("rejects a future date", async ({ page }) => {
+    const errors = collectBrowserErrors(page);
+    await freezeToday(page);
+    await mockChowkaApi(page, []);
+    await page.goto("/index.html");
+    const dateInput = page.locator("#chowka-date");
+    await dateInput.fill(TOMORROW);
+    await dateInput.dispatchEvent("change");
+    await expect(dateInput).toHaveValue(TODAY);
+    await expectNoBrowserErrors(errors);
     },
-  );
+  });
 
-  test(
-    "rejects a date older than 30 days",
-    async ({ page }) => {
-      const errors = collectBrowserErrors(page);
-      await freezeToday(page);
-      await mockChowkaApi(page, []);
-      await page.goto("/index.html");
-      const dateInput = page.locator("#chowka-date");
-      await dateInput.fill(TOO_OLD);
-      await dateInput.dispatchEvent("change");
-      await expect(dateInput).toHaveValue(TODAY);
-      await expectNoBrowserErrors(errors);
+  test("rejects a date older than 30 days", async ({ page }) => {
+    const errors = collectBrowserErrors(page);
+    await freezeToday(page);
+    await mockChowkaApi(page, []);
+    await page.goto("/index.html");
+    const dateInput = page.locator("#chowka-date");
+    await dateInput.fill(TOO_OLD);
+    await dateInput.dispatchEvent("change");
+    await expect(dateInput).toHaveValue(TODAY);
+    await expectNoBrowserErrors(errors);
     },
-  );
+  });
 });
