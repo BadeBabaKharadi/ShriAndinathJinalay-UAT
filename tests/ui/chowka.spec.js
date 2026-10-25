@@ -65,17 +65,14 @@ async function expectNoBrowserErrors(errors) {
 }
 
 test.describe("Chowka section on home page", () => {
-  test(
-    "loads Chowka JavaScript without browser errors",
-    async ({ page }) => {
+  test("loads Chowka JavaScript without browser errors", async ({ page }) => {
     const errors = collectBrowserErrors(page);
     await freezeToday(page);
     await mockChowkaApi(page, []);
     await page.goto("/index.html");
     await expect(page.locator("#chowka-date")).toBeVisible();
-      await expectNoBrowserErrors(errors);
-    },
-  );
+    await expectNoBrowserErrors(errors);
+  });
 
   test(
     "requires all three Maharaj and sorts their entries in the requested order",
