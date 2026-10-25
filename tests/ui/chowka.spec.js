@@ -135,7 +135,7 @@ test.describe("Chowka section on home page", () => {
     );
 
     await expect(rows.nth(1).locator("td").nth(3)).toContainText(
-      "१०৮ मुनि श्री विदित सागर जी",
+      "१०८ मुनि श्री विदित सागर जी",
     );
 
     await expect(rows.nth(2).locator("td").nth(3)).toContainText(
